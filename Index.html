@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="$PAI Presale">
+  <title>$PAI Presale</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Reporter&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-image: url('https://s20.directupload.net/images/240905/lqu6vg4k.png');
+      background-size: cover;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      margin: 20px 0;
+    }
+
+    .header-img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+    }
+
+    .presale-section {
+      background-color: rgba(0, 0, 255, 0.7);
+      padding: 20px;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 10px;
+    }
+
+    .presale-section h1 {
+      font-family: 'Reporter', sans-serif;
+      font-size: 2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .tokenomics-section {
+      margin: 20px 0;
+    }
+
+    .tokenomics-img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 1rem;
+    }
+
+    footer a {
+      color: #FFD700;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+  <script>
+    const paymentAddress = '2VfZ3LWcX1TaM6Yef1pvuueeW6FwjpTHAZfhP4VuXZEJ';
+    const solToUSD = 24.00; // Example rate for SOL to USD conversion
+    const paiPrice = 0.0007; // PAI price in USD
+
+    async function connectWallet() {
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          await window.solana.connect();
+          const walletPublicKey = window.solana.publicKey.toString();
+          document.getElementById('walletAddress').textContent = `Connected: ${walletPublicKey}`;
+        } catch (err) {
+          console.error('Wallet connection error:', err);
+          document.getElementById('walletAddress').textContent = 'Connection failed. Try again.';
+        }
+      } else {
+        alert('Solana wallet not found! Please install Phantom or a compatible wallet.');
+      }
+    }
+
+    document.getElementById("presaleForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      let solAmount = parseFloat(document.getElementById("solAmount").value);
+      let message = document.getElementById("message");
+
+      if (solAmount >= 0.01 && solAmount <= 10) {
+        try {
+          const provider = window.solana;
+          if (provider && provider.isPhantom) {
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const transaction = new solanaWeb3.Transaction().add(
+              solanaWeb3.SystemProgram.transfer({
+                fromPubkey: provider.publicKey,
+                toPubkey: new solanaWeb3.PublicKey(paymentAddress),
+                lamports: solanaWeb3.LAMPORTS_PER_SOL * solAmount,  // Convert SOL to lamports
+              })
+            );
+            const { signature } = await provider.signAndSendTransaction(transaction);
+            await connection.confirmTransaction(signature);
+            
+            let paiTokens = (solAmount * solToUSD) / paiPrice;
+            message.textContent = `Success! You have purchased ${paiTokens.toFixed(2)} PAI Tokens. Transaction: ${signature}`;
+            message.style.color = "green";
+          } else {
+            alert('Solana wallet not found! Please install Phantom or a compatible wallet.');
+          }
+        } catch (err) {
+          console.error('Transaction error:', err);
+          message.textContent = 'Transaction failed. Please try again.';
+          message.style.color = "red";
+        }
+      } else {
+        message.textContent = "Please enter a valid amount between 0.01 and 10 SOL.";
+        message.style.color = "red";
+      }
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <img src="https://s20.directupload.net/images/240905/gwn76ayn.png" alt="$PAI Presale" class="header-img">
+  </header>
+
+  <main>
+    <section class="presale-section">
+      <h1>$PAI Presale</h1>
+      <p>1 $PAI = 0.0007 USD</p>
+      <form id="presaleForm">
+        <label for="solAmount">Enter amount of SOL:</label>
+        <input type="number" id="solAmount" name="solAmount" min="0.01" max="10" step="0.01" required>
+        <button type="submit" id="connectWalletBtn" onclick="connectWallet()">Buy $PAI</button>
+        <p id="message"></p>
+        <p id="walletAddress"></p>
+      </form>
+    </section>
+    <section class="tokenomics-section">
+      <img src="https://s20.directupload.net/images/240905/gwn76ayn.png" alt="Tokenomics" class="tokenomics-img">
+    </section>
+  </main>
+
+  <footer>
+    <p>Follow us on: 
+      <a href="https://x.com/PaimonCrypto" target="_blank">Twitter</a> | 
+      <a href="https://t.me/paimoncoin" target="_blank">Telegram</a>
+    </p>
+  </footer>
+</body>
+</html>
